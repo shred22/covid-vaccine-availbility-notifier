@@ -4,27 +4,21 @@ import logging
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from getpass import getpass
+import configparser
+import os 
  
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), '../../../conf', 'config.ini'))
+
 #The mail addresses and password
-sender_address = 'kumarshred2@gmail.com'
-sender_pass = 'KubernetesCK@D123'
+sender_address = config.get('mail', 'senderid')
+sender_pass = config.get('mail', 'senderpassword')
 
-receiver_address = ['shreyas.dange22@gmail.com','akanksha.singh2908@gmail.com', 'dangesanand@gmail.com']
-
-# #Setup the Logger
-# logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
-# rootLogger = logging.getLogger()
-
-# fileHandler = logging.FileHandler("app.log")
-# consoleHandler = logging.StreamHandler()
-
-# fileHandler.setFormatter(logFormatter)
-# consoleHandler.setFormatter(logFormatter)
-
-# #Add Console and File Handlers both to Root Logger
-# rootLogger.addHandler(consoleHandler)
-# rootLogger.addHandler(fileHandler)
-# rootLogger.setLevel(logging.INFO)
+receiver_address = []
+receiverIds = config.get('mail', 'receiverids').split(',')
+for receiverId in receiverIds:
+    receiver_address.append(receiverId.strip())
+print(receiver_address)
 
 class EmailSender:
    

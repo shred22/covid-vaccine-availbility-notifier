@@ -6,6 +6,11 @@ import urllib3
 import json
 import email_sender
 from datetime import datetime, timedelta
+import configparser
+import  os
+
+config = configparser.ConfigParser()
+config.read(os.path.join(os.path.dirname(__file__), '../../../conf', 'config.ini'))
 
 #Setup the Logger
 logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -54,20 +59,6 @@ for url in serviceUrl:
                 }
                 finalVaccinationSlotsList.append(vaccineSlot)
             
-
-
-
-    # for session in jsonResponse['centers']['sessions']:
-    #     if session['available_capacity_dose1'] > 0 or session['available_capacity_dose2'] > 0 or session['available_capacity'] > 0:
-    #         vaccineSlot = {
-    #             'name' : session['centers']['name'],
-    #             'available_capacity_dose1' : session['available_capacity_dose1'],
-    #             'available_capacity_dose2': session['available_capacity_dose1'],
-    #             'available_capacity': session['available_capacity'],
-    #             'vaccine' : session['vaccine']
-    #         }
-    #         finalVaccinationSlotsList.append(vaccineSlot)
-
     if len(finalVaccinationSlotsList) > 0: #
         emailBody = json.dumps(finalVaccinationSlotsList, indent = 4)
         email_sender.EmailSender.sendEmail(emailBody)
