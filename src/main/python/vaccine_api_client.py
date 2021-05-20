@@ -33,18 +33,22 @@ logging.getLogger("urllib3").setLevel(logging.ERROR)
 
 finalVaccinationSlotsList = []  
 vaccineSlot = {}
-reqHeaders = {'Authorization': 'Bearer zxxx',
-              "Accept-Language": "hi_IN",
-              "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
-              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"
+
+
+reqHeaders = {
+              "Accept-Language": config.get('mail', 'acceptLanguage'),
+              "user-agent": config.get('mail', 'userAgent'),
+              "accept": config.get('mail', 'accept')
               }
+
 tomorrowDate = datetime.now() + timedelta(1)
 tomorrow = tomorrowDate.strftime('%d-%m-%Y')
-serviceUrl = ['https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode=452016&date='+tomorrow, 'https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict?district_id=314&date='+tomorrow]
-for url in serviceUrl: 
-    searchCriteria = 'Pin' if url.__contains__('Pin') else 'District'
-    logging.info(f'Searching by {searchCriteria} : ' + url)
-    response = requests.get(url, headers=reqHeaders, verify=False)
+cowinApis = config.get('mail', 'cowinApiUrls')
+
+for apiUrl in cowinApis.split(","):
+    searchCriteria = 'Pin' if apiUrl.__contains__('Pin') else 'District'
+    logging.info(f'Searching by {searchCriteria} : ' + apiUrl)
+    response = requests.get(apiUrl, headers=reqHeaders, verify=False)
     jsonResponse = json.loads(response.text)
 
     for center in jsonResponse['centers']:
@@ -52,6 +56,7 @@ for url in serviceUrl:
             if session['available_capacity_dose1'] > 0 or session['available_capacity_dose2'] > 0 or session['available_capacity'] > 0:
                 vaccineSlot = {
                 'name' : center['name'],
+                'pincode': center['pincode'],
                 'available_capacity_dose1' : session['available_capacity_dose1'],
                 'available_capacity_dose2': session['available_capacity_dose2'],
                 'available_capacity': session['available_capacity'],
@@ -62,8 +67,6 @@ for url in serviceUrl:
     if len(finalVaccinationSlotsList) > 0: #
         emailBody = json.dumps(finalVaccinationSlotsList, indent = 4)
         email_sender.EmailSender.sendEmail(emailBody)
-        print('EmailBody Below')
-        print(emailBody)
     else:
         logging.info("Not Sending Emails as No Slots vaccant")
 
