@@ -18,7 +18,7 @@ receiver_address = []
 receiverIds = config.get('mail', 'receiverids').split(',')
 for receiverId in receiverIds:
     receiver_address.append(receiverId.strip())
-print(receiver_address)
+
 
 class EmailSender:
    
