@@ -33,8 +33,6 @@ logging.getLogger("urllib3").setLevel(logging.ERROR)
 
 finalVaccinationSlotsList = []  
 vaccineSlot = {}
-
-
 reqHeaders = {
               "Accept-Language": config.get('mail', 'acceptLanguage'),
               "user-agent": config.get('mail', 'userAgent'),
@@ -47,22 +45,26 @@ cowinApis = config.get('mail', 'cowinApiUrls')
 
 for apiUrl in cowinApis.split(","):
     searchCriteria = 'Pin' if apiUrl.__contains__('Pin') else 'District'
+    apiUrl = apiUrl.replace('<date>', tomorrow)
     logging.info(f'Searching by {searchCriteria} : ' + apiUrl)
-    response = requests.get(apiUrl, headers=reqHeaders, verify=False)
-    jsonResponse = json.loads(response.text)
+    try:
+        response = requests.get(apiUrl, headers=reqHeaders, verify=False)
+        jsonResponse = json.loads(response.text)
 
-    for center in jsonResponse['centers']:
-        for session in center['sessions']:
-            if session['available_capacity_dose1'] > 0 or session['available_capacity_dose2'] > 0 or session['available_capacity'] > 0:
-                vaccineSlot = {
-                'name' : center['name'],
-                'pincode': center['pincode'],
-                'available_capacity_dose1' : session['available_capacity_dose1'],
-                'available_capacity_dose2': session['available_capacity_dose2'],
-                'available_capacity': session['available_capacity'],
-                'vaccine' : session['vaccine']
-                }
-                finalVaccinationSlotsList.append(vaccineSlot)
+        for center in jsonResponse['centers']:
+            for session in center['sessions']:
+                if session['available_capacity_dose1'] > 0 or session['available_capacity_dose2'] > 0 or session['available_capacity'] > 0:
+                    vaccineSlot = {
+                    'name' : center['name'],
+                    'pincode': center['pincode'],
+                    'available_capacity_dose1' : session['available_capacity_dose1'],
+                    'available_capacity_dose2': session['available_capacity_dose2'],
+                    'available_capacity': session['available_capacity'],
+                    'vaccine' : session['vaccine']
+                    }
+                    finalVaccinationSlotsList.append(vaccineSlot)
+    except Exception as e:
+        logging.error(e)
             
     if len(finalVaccinationSlotsList) > 0: #
         emailBody = json.dumps(finalVaccinationSlotsList, indent = 4)
