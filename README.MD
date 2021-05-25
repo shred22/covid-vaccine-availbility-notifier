@@ -68,3 +68,10 @@ To run the command use below command:
 
 Application logs will  get printed in `app.log` file.
 
+
+### To Get Telegram Chat ID for a channel
+
+you can visit this URL. 
+`https://api.telegram.org/botXXX:YYYYY/getUpdates` 
+<br>
+replace the XXX: YYYYY with your BOT HTTP API Token you just got from the Telegram BotFather
